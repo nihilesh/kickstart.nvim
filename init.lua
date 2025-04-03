@@ -178,6 +178,16 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 -- NOTE: This won't work in all terminal emulators/tmux/etc. Try your own mapping
 -- or just use <C-\><C-n> to exit terminal mode
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
+vim.keymap.set('n', '<C-t>', ':vsplit | terminal<CR>', { noremap = true, silent = true, desc = 'Exit terminal mode' })
+
+-- Automatically set 'modifiable' to true for terminal buffers
+vim.api.nvim_create_autocmd('TermOpen', {
+  pattern = '*', -- Apply to all terminal buffers
+  callback = function()
+    -- Make the terminal buffer modifiable
+    vim.cmd 'setlocal modifiable'
+  end,
+})
 
 -- TIP: Disable arrow keys in normal mode
 -- vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
@@ -213,6 +223,21 @@ vim.api.nvim_create_autocmd('TextYankPost', {
     vim.highlight.on_yank()
   end,
 })
+
+-- Automatically remove trailing whitespace on save
+vim.api.nvim_create_autocmd('BufWritePre', {
+  pattern = '*', -- Apply to all file types
+  command = '%s/\\s\\+$//e', -- Removes trailing whitespace
+})
+
+-- Keymap to reload the configuration and plugins
+vim.keymap.set('n', '<Leader>ri', function()
+  -- Sync Lazy.nvim and reload plugins
+  require('lazy').sync()
+
+  -- Reload the init.lua configuration
+  vim.cmd 'luafile $MYVIMRC'
+end, { noremap = true, silent = true })
 
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
@@ -991,18 +1016,19 @@ require('lazy').setup({
   --  Here are some example plugins that I've included in the Kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
-  -- require 'kickstart.plugins.debug',
-  -- require 'kickstart.plugins.indent_line',
-  -- require 'kickstart.plugins.lint',
-  -- require 'kickstart.plugins.autopairs',
-  -- require 'kickstart.plugins.neo-tree',
-  -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  require 'kickstart.plugins.debug',
+  require 'kickstart.plugins.indent_line',
+  require 'kickstart.plugins.lint',
+  require 'kickstart.plugins.autopairs',
+  require 'kickstart.plugins.neo-tree',
+  require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
-  -- { import = 'custom.plugins' },
+  { import = 'custom.plugins' },
+
   --
   -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
   -- Or use telescope!
